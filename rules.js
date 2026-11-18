@@ -14,10 +14,16 @@ const GAMES = {
   superover: { name: 'Super Over', minMs: 5000, max: 360,
     balls: (ms) => (S(ms) < 4.8 ? 0 : Math.min(60, Math.floor((S(ms) - 4.8) / 2.8) + 1)),
     cap(ms) { return 6 * this.balls(ms); } },
-  // Rush: best possible pace (every coin and every boost pad) is 580 points/s; the 4,000 delivery + heart
-  // bonus needs the full track, which takes >= 82.5 s of riding (85 s with the countdown).
-  rush: { name: 'Talabat Rush Run', minMs: 4000, max: 60000,
-    cap: (ms) => 620 * S(ms) + (S(ms) >= 80 ? 4000 : 0) },
+  // Rush (endless): no finish, so the cap is points per second, derived from the rules in rush-core.js:
+  //  - distance: at most VMAX x BOOST_K = 32 x 1.5 = 48 points/s
+  //  - coins: rows are always >= 0.95 s of track-speed travel apart, so even boosted the whole time a rider
+  //    passes <= 1.5 / 0.95 = 1.58 rows/s; each row carries <= 12 coins (line <= 7 + hop arc 5) of 100 =
+  //    <= 1,895 points/s
+  //  => <= 1,943 points/s, rounded up to 1,950/s of server-measured time (which also includes the 2.9 s
+  //     countdown and any pause). The fairness bot's real pace is ~280/s. The absolute max only guards
+  //     against nonsense (~43 min at the cap).
+  rush: { name: 'Talabat Rush Run', minMs: 4000, max: 5000000,
+    cap: (ms) => 1950 * S(ms) },
 };
 
 // Returns null when the score is plausible, else a reason.
