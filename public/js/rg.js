@@ -5,7 +5,7 @@
   const LS = window.localStorage;
 
   // ---------- rider identity ----------
-  RG.RIDER_RE = /^[A-Za-z0-9]{3,12}$/;
+  RG.RIDER_RE = /^[0-9]{1,7}$/;
   RG.rider = function () {
     try { const r = JSON.parse(LS.getItem('rg_rider') || 'null'); return r && RG.RIDER_RE.test(r.id) ? r : null; } catch (e) { return null; }
   };
@@ -227,6 +227,7 @@
         if (!sh.token) throw new Error('offline');
         const d = await RG.api('/api/score', { riderId: rider.id, nickname: rider.nick, device: RG.device(), game: cfg.game, score, token: sh.token });
         sh.lastResult = d;
+        if (d.admin) { $('ovBest').textContent = '–'; $('ovRank').textContent = '–'; $('ovNote').textContent = 'Admin test run, so this score was not saved.'; return; }
         $('ovBest').textContent = d.best.toLocaleString('en-US');
         $('ovRank').textContent = '#' + d.rank;
         if (d.improved && d.score > 0) $('ovTag').innerHTML = '<span class="newbest">NEW BEST!</span>';
