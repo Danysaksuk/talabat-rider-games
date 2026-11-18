@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Leaderboard · Talabat Rider Games</title><meta name="theme-color" content="#FF5A00">
+<link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/rg.css">
+</head><body>
+<div class="wrap">
+  <div class="top"><a href="/"><img src="/img/talabat-logo.png" alt="talabat"></a><a class="pill" href="/" style="text-decoration:none">← Games</a></div>
+  <h1>🏆 Leader<span>board</span></h1>
+  <p class="sub" id="lbSub">Best score per rider in each game. The top scorer in each game wins.</p>
+  <div class="tabs" role="tablist">
+    <button data-g="hoops">Hoops</button><button data-g="superover">Super Over</button><button data-g="rush">Rush Run</button>
+  </div>
+  <div class="lb" id="lb"><div class="empty">Loading…</div></div>
+  <p class="upd" id="upd"></p>
+</div>
+<script src="/js/rg.js"></script>
+<script>
+(function () {
+  const me = RG.rider();
+  let game = new URLSearchParams(location.search).get('game') || 'hoops';
+  if (!['hoops', 'superover', 'rush'].includes(game)) game = 'hoops';
+  const tabs = document.querySelectorAll('.tabs button');
+  function row(r, mine) {
+    return `<div class="lr r${r.rank}${mine ? ' me' : ''}"><div class="rk">${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</div>
+      <div class="nm"><b>${RG.esc(r.nickname || r.riderId)}${mine ? ' (you)' : ''}</b><small>${r.riderId}</small></div>
+      <div class="sc">${r.score.toLocaleString('en-US')}</div></div>`;
+  }
+  let busy = false;
+  async function load() {
+    if (busy) return; busy = true;
+    tabs.forEach((b) => b.classList.toggle('on', b.dataset.g === game));
+    try {
+      const d = await RG.api(`/api/leaderboard?game=${game}${me ? '&riderId=' + me.id : ''}`);
+      if (d.game !== game) return;
+      let html = d.top.map((r) => row(r, me && r.riderId === me.id)).join('');
+      if (!d.top.length) html = '<div class="empty">No scores yet. Be the first!</div>';
+      if (d.me && d.me.rank > 20) html += '<div class="lr gap">⋯</div>' + row(d.me, true);
+      document.getElementById('lb').innerHTML = html;
+      document.getElementById('upd').textContent = `${d.total} rider${d.total === 1 ? '' : 's'} · updated ${new Date(d.at).toLocaleTimeString()} · refreshes every 10 s`;
+    } catch (e) {
+      document.getElementById('upd').textContent = 'Could not refresh: ' + e.message;
+    } finally { busy = false; }
+  }
+  tabs.forEach((b) => b.addEventListener('click', () => {
+    game = b.dataset.g; history.replaceState(null, '', '?game=' + game);
+    document.getElementById('lb').innerHTML = '<div class="empty">Loading…</div>'; busy = false; load();
+  }));
+  load();
+  setInterval(load, 10000);
+})();
+</script>
+</body></html>

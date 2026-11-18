@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Talabat Rider Games</title><meta name="theme-color" content="#FF5A00">
+<link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/rg.css">
+</head><body>
+<div class="wrap">
+  <div class="top"><img src="/img/talabat-logo.png" alt="talabat"><button class="pill mute-btn" id="mute" aria-label="Mute"></button></div>
+
+  <section id="gate" hidden>
+    <h1>Rider <span>Games</span></h1>
+    <p class="sub">Play 3 quick games, beat your best and climb the leaderboard. The top scorer wins!</p>
+    <form id="gateForm" novalidate>
+      <label for="rid">Rider ID</label>
+      <input id="rid" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="e.g. TR12345" inputmode="text">
+      <label for="nick">Nickname <small style="font-weight:500;color:var(--mut)">(optional, shown on the leaderboard)</small></label>
+      <input id="nick" maxlength="16" autocomplete="nickname" placeholder="e.g. Speedy Sam">
+      <div class="err" id="err"></div>
+      <button class="btn" style="width:100%;margin-top:6px" type="submit">Let's go</button>
+    </form>
+  </section>
+
+  <section id="hub" hidden>
+    <h1>Hi <span id="hiName"></span> 👋</h1>
+    <p class="sub">Rider <b id="hiId"></b> · <a href="#" id="change" style="color:var(--o)">Not you?</a></p>
+    <div class="cards">
+      <a class="gcard" href="/hoops"><div class="gicon" style="background:#FFE3D1">🏀</div><div><h3>Basketball Shootout</h3><p>Swipe to shoot. 60 seconds, moving hoop.</p><div class="best" data-g="hoops"></div></div><span class="go">›</span></a>
+      <a class="gcard" href="/superover"><div class="gicon" style="background:#DDF3E4">🏏</div><div><h3>Super Over</h3><p>Time your swing. Chase the target.</p><div class="best" data-g="superover"></div></div><span class="go">›</span></a>
+      <a class="gcard" href="/rush"><div class="gicon" style="background:#E5DDFB">🛵</div><div><h3>Talabat Rush Run</h3><p>Dodge, hop and deliver in 90 seconds.</p><div class="best" data-g="rush"></div></div><span class="go">›</span></a>
+    </div>
+    <a class="btn" href="/leaderboard" style="display:block;text-align:center;text-decoration:none;margin-top:20px">🏆 Leaderboard</a>
+  </section>
+</div>
+<script src="/js/rg.js"></script>
+<script>
+(function () {
+  const gate = document.getElementById('gate'), hub = document.getElementById('hub');
+  const next = new URLSearchParams(location.search).get('next');
+  RG.setMuted(RG.muted);
+  document.getElementById('mute').onclick = () => { RG.audioUnlock(); RG.setMuted(!RG.muted); };
+  function show() {
+    const r = RG.rider();
+    gate.hidden = !!r; hub.hidden = !r;
+    if (!r) { document.getElementById('rid').focus(); return; }
+    document.getElementById('hiName').textContent = r.nick || r.id;
+    document.getElementById('hiId').textContent = r.id;
+    RG.api('/api/me?riderId=' + r.id).then((d) => {
+      document.querySelectorAll('.best').forEach((el) => {
+        const g = d.games[el.dataset.g];
+        el.textContent = g ? `Your best: ${g.best.toLocaleString('en-US')} · Rank #${g.rank}` : 'Not played yet';
+      });
+    }).catch(() => {});
+  }
+  document.getElementById('gateForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const id = document.getElementById('rid').value.trim();
+    const nick = document.getElementById('nick').value;
+    const err = document.getElementById('err');
+    if (!RG.RIDER_RE.test(id)) { err.textContent = 'Rider ID must be 3 to 12 letters or numbers (no spaces or symbols).'; return; }
+    err.textContent = '';
+    RG.setRider(id, nick);
+    if (next && /^\/[a-z]+$/.test(next)) { location.href = next; return; }
+    show();
+  });
+  document.getElementById('change').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (confirm('Switch rider? Scores stay saved under each rider ID.')) { RG.clearRider(); show(); }
+  });
+  show();
+})();
+</script>
+</body></html>
