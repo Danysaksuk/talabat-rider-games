@@ -205,7 +205,7 @@ import * as THREE from '/vendor/three.min.js';
   const icons = [['#ff2b2b', (g) => { g.fillStyle = '#fff'; g.fillRect(55, 26, 18, 46); g.beginPath(); g.arc(64, 90, 10, 0, 7); g.fill(); }], ['#ffc400', (g) => { g.fillStyle = '#1d1d1f'; g.beginPath(); g.moveTo(64, 22); g.lineTo(98, 62); g.lineTo(76, 62); g.lineTo(76, 98); g.lineTo(52, 98); g.lineTo(52, 62); g.lineTo(30, 62); g.closePath(); g.fill(); }]].map(([fill, draw]) => {
     const pos = new Float32Array(40 * 3), g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setDrawRange(0, 0);
     const pts = new THREE.Points(g, new THREE.PointsMaterial({ map: iconTex(fill, draw), size: 34 * pr, sizeAttenuation: false, transparent: true, depthTest: false, fog: false }));
-    pts.frustumCulled = false; pts.renderOrder = 5; scene.add(pts); return { pts, pos, n: 0 };
+    pts.frustumCulled = false; pts.renderOrder = 5; return { pts, pos, n: 0 };
   });
 
   // ---------- coins (instanced, spinning, glowing) ----------
@@ -326,10 +326,16 @@ import * as THREE from '/vendor/three.min.js';
   let coast = 0, coastV = 0, run = null, track = null, shake = 0, banner = null, endT = -1, flashT = 0, idleT = 0, camX = 0, boostVis = 0, lastHUD = '';
   const sh = RG.shell({
     game: 'rush', title: '🛵 Talabat Rush Run',
-    how: '• <b>Swipe left / right</b> to change lanes and <b>swipe up</b> to hop (arrow keys and Space work too).<br>• Hop over <b>cones, barriers and potholes</b> (yellow arrows). <b>Taxis, buses and SUVs</b> are too tall, so go round them (red arrows).<br>• Grab <b>coins</b> (+100). Ride over a glowing <b>green boost pad</b> to smash through anything.<br>• 3 hearts. Reach the <b>DROP-OFF</b> arch in about 90 s for a bonus for each heart left.',
+    how: '• <b>Swipe left / right</b> to change lanes and <b>swipe up</b> to hop (arrow keys and Space work too).<br>• Hop over <b>cones, barriers and potholes</b> (yellow road marks). <b>Taxis, buses and SUVs</b> are too tall, so go round them (red road marks).<br>• Grab <b>coins</b> (+100). Ride over a glowing <b>green boost pad</b> to smash through anything.<br>• 3 hearts. Reach the <b>DROP-OFF</b> arch in about 90 s for a bonus for each heart left.',
     onReset: newRun, onStart: () => {},
   });
   if (!sh) return;
+  // ---------- background music (looping, follows the mute button) ----------
+  const music = new Audio('audio/rush-music.m4a'); music.loop = true; music.preload = 'auto'; music.volume = 0.55; music.muted = RG.muted;
+  const playMusic = () => { music.muted = RG.muted; const p = music.play(); if (p && p.catch) p.catch(() => {}); };
+  ['playBtn', 'againBtn'].forEach((id) => { const b = document.getElementById(id); if (b) b.addEventListener('click', playMusic); });
+  const mb = document.getElementById('mute'); if (mb) mb.addEventListener('click', () => setTimeout(() => { music.muted = RG.muted; }, 0));
+  document.addEventListener('visibilitychange', () => { if (document.hidden) music.pause(); else if (sh.started || sh.state !== 'ready') playMusic(); });
   function newRun() {
     track = RC.clone(RC.generate((Math.random() * 4294967295) >>> 0));
     run = RC.newRun(track); coast = 0; coastV = 0; shake = 0; banner = null; endT = -1; flashT = 0; camX = 0; boostVis = 0;
