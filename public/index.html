@@ -12,7 +12,7 @@
     <p class="sub">Play 3 quick games, beat your best and climb the leaderboard. The top scorer wins!</p>
     <form id="gateForm" novalidate>
       <label for="rid">Rider ID</label>
-      <input id="rid" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="12" placeholder="e.g. TR12345" inputmode="text">
+      <input id="rid" autocomplete="off" spellcheck="false" maxlength="7" placeholder="e.g. 1234567" inputmode="numeric" pattern="[0-9]*">
       <label for="nick">Nickname <small style="font-weight:500;color:var(--mut)">(optional, shown on the leaderboard)</small></label>
       <input id="nick" maxlength="16" autocomplete="nickname" placeholder="e.g. Speedy Sam">
       <div class="err" id="err"></div>
@@ -56,7 +56,7 @@
     const id = document.getElementById('rid').value.trim();
     const nick = document.getElementById('nick').value;
     const err = document.getElementById('err');
-    if (!RG.RIDER_RE.test(id)) { err.textContent = 'Rider ID must be 3 to 12 letters or numbers (no spaces or symbols).'; return; }
+    if (!RG.RIDER_RE.test(id)) { err.textContent = 'Rider ID must be numbers only, up to 7 digits.'; return; }
     err.textContent = '';
     RG.setRider(id, nick);
     if (next && /^\/[a-z]+$/.test(next)) { location.href = next; return; }
