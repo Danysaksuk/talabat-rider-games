@@ -217,7 +217,11 @@ app.post('/api/reset', async (req, res) => {
 });
 
 app.get('/healthz', (req, res) => res.send('ok'));
-app.use(express.static(path.join(__dirname, 'public'), { extensions: ['html'], maxAge: '1h' }));
+app.use(express.static(path.join(__dirname, 'public'), {
+  extensions: ['html'], maxAge: '1h',
+  // pages, scripts and styles always revalidate so updates reach phones right away
+  setHeaders: (res, fp) => { if (/\.(html|js|css)$/.test(fp) && !fp.includes(path.sep + 'vendor' + path.sep)) res.setHeader('Cache-Control', 'no-cache'); },
+}));
 // JSON errors only (no stack traces), e.g. for malformed JSON bodies.
 app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   const status = err.status || err.statusCode || 500;
