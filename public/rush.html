@@ -3,7 +3,34 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Talabat Rush Run · Talabat Rider Games</title><meta name="theme-color" content="#FF5A00">
 <link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/rg.css">
+<link rel="modulepreload" href="/vendor/three.min.js">
+<style>
+#stage{background:#9fd0f2}
+#hud{position:absolute;top:calc(10px + env(safe-area-inset-top));left:58px;right:58px;z-index:3;pointer-events:none;font-family:Poppins,system-ui,sans-serif}
+#hud .hrow{display:flex;justify-content:space-between;gap:8px}
+#hud .pill{display:flex;align-items:center;gap:6px;height:40px;padding:0 12px;border-radius:999px;background:rgba(255,255,255,.92);box-shadow:0 3px 0 rgba(0,0,0,.12);color:#1d1d1f}
+#hud .pill small{font-size:10px;font-weight:700;letter-spacing:1px;color:#FF5A00}
+#hud .pill b{font-weight:900;font-size:18px;font-variant-numeric:tabular-nums}
+#hud .coin{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff3b0,#ffc61a 45%,#d99a00);box-shadow:0 0 0 2px #b07800 inset}
+#hud .hrow2{display:flex;align-items:center;gap:10px;margin-top:8px;padding:0 4px}
+#hHearts i{font-style:normal;font-size:20px;color:rgba(0,0,0,.25);text-shadow:0 1px 0 #fff}
+#hHearts i.on{color:#ff2a4a;text-shadow:0 2px 0 #fff,0 0 1px #fff}
+#hud .prog{position:relative;flex:1;height:8px;border-radius:99px;background:rgba(255,255,255,.75);box-shadow:0 2px 0 rgba(0,0,0,.12)}
+#hProg{height:100%;border-radius:99px;background:#FF5A00;width:0}
+#hBike{position:absolute;top:-9px;font-size:18px;transform:translateX(-50%) scaleX(-1)}
+#hud .prog em{position:absolute;right:0;top:11px;font-style:normal;font-size:9px;font-weight:900;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);letter-spacing:.5px}
+#banner{position:absolute;left:0;right:0;top:27%;z-index:3;text-align:center;pointer-events:none;opacity:0;--c:#FF5A00}
+#banner b{display:block;font-weight:900;font-size:46px;line-height:1;color:#fff;text-shadow:0 5px 0 var(--c),0 0 18px rgba(0,0,0,.35)}
+#banner span{display:inline-block;margin-top:10px;font-weight:900;font-size:15px;letter-spacing:1px;color:#fff;background:var(--c);padding:4px 12px;border-radius:99px}
+#banner span:empty{display:none}
+#banner.show{animation:bn 1s ease-out forwards}
+@keyframes bn{0%{opacity:0;transform:scale(1.6)}18%{opacity:1;transform:scale(1)}80%{opacity:1}100%{opacity:1}}
+#hint{position:absolute;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom));z-index:3;text-align:center;pointer-events:none;font-weight:900;font-size:16px;line-height:1.5;color:#fff;text-shadow:0 2px 0 #FF5A00,0 0 10px rgba(0,0,0,.45);transition:opacity .4s}
+#flash{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:radial-gradient(ellipse at center,rgba(255,42,74,0) 30%,rgba(255,42,74,.9))}
+#pops{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden}
+#pops .pop{position:absolute;left:0;top:0;opacity:0;font-weight:900;font-size:18px;color:#ffd23f;text-shadow:0 2px 0 #b06a00,0 0 6px rgba(0,0,0,.4);white-space:nowrap}
+</style>
 </head><body>
 <div id="stage"><canvas id="c"></canvas></div>
-<script src="/js/rg.js"></script><script src="/js/rush-core.js"></script><script src="/js/rush.js"></script>
+<script src="/js/rg.js"></script><script src="/js/rush-core.js"></script><script type="module" src="/js/rush.js"></script>
 </body></html>
