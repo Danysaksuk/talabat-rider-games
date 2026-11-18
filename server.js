@@ -14,7 +14,8 @@ const DATA_FILE = process.env.DATA_FILE || path.join(__dirname, 'data', 'scores.
 const RULES = require('./rules');
 const GAMES = RULES.GAMES;
 const GAME_IDS = Object.keys(GAMES);
-const RIDER_RE = /^[A-Z0-9]{3,12}$/;
+const RIDER_RE = /^[0-9]{1,7}$/;
+const ADMIN_RIDER = String(process.env.ADMIN_RIDER_ID || '4826'); // test ID: plays normally, never saved
 const TOKEN_TTL_MS = 30 * 60 * 1000;
 
 // ---------- storage: in-memory authoritative, persisted to Postgres or JSON ----------
@@ -153,6 +154,7 @@ app.post('/api/score', writeLimit, async (req, res) => {
   if (t.used) return res.status(403).json({ error: 'Run token already used' });
   if (t.riderId !== riderId || t.game !== game) return res.status(403).json({ error: 'Token does not match this run' });
   t.used = true;
+  if (riderId === ADMIN_RIDER) return res.json({ ok: true, admin: true, score, best: score, improved: false, rank: '-', total: board(game).length });
   const bad = RULES.check(game, score, Date.now() - t.start);
   if (bad) return res.status(bad === 'Invalid score' ? 400 : 422).json({ error: bad });
 
@@ -176,7 +178,7 @@ app.get('/api/leaderboard', readLimit, (req, res) => {
   if (!GAMES[game]) return res.status(400).json({ error: 'Unknown game' });
   const rows = board(game);
   const riderId = normId(req.query.riderId);
-  const me = riderId ? rows.find((x) => x.riderId === riderId) || null : null;
+  const me = riderId && riderId !== ADMIN_RIDER ? rows.find((x) => x.riderId === riderId) || null : null;
   const strip = (x) => ({ rank: x.rank, riderId: x.riderId, nickname: x.nickname, score: x.score });
   res.json({ game, total: rows.length, top: rows.slice(0, 20).map(strip), me: me && strip(me), at: Date.now() });
 });
