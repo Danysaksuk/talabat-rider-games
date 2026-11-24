@@ -196,7 +196,7 @@ app.get('/api/me', readLimit, (req, res) => {
 
 app.get('/api/export', (req, res) => {
   if (!pinOk(req)) return res.status(403).json({ error: 'Bad PIN' });
-  // Per-game ranking. ?game=hoops|superover|rush exports one game; no game exports all three, one block per game.
+  // Per-game ranking. ?game=hoops|superover|rush|penalty|stack exports one game; no game exports every game, one block per game.
   const game = req.query.game ? String(req.query.game) : '';
   if (game && !GAMES[game]) return res.status(400).json({ error: 'Unknown game' });
   const esc = (v) => /[",\n]/.test(String(v)) ? '"' + String(v).replace(/"/g, '""') + '"' : String(v);

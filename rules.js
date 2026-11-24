@@ -24,6 +24,17 @@ const GAMES = {
   //     against nonsense (~43 min at the cap).
   rush: { name: 'Talabat Rush Run', minMs: 4000, max: 5000000,
     cap: (ms) => 1950 * S(ms) },
+  // Penalty: 5 kicks/level, 3 to advance. Max 175/goal (100 + 50 corner + 25 curve) + 500
+  // per level. Fastest cycle is about 1.4 s (min flight to the mouth + 0.85 s result), so
+  // a perfect level is <= 1,375 in 7 s, i.e. <= 200 points per second. minMs covers 5
+  // short misses after the 2.9 s countdown. The absolute max is about 30 min at the cap.
+  penalty: { name: 'Penalty Shootout', minMs: 7000, max: 400000,
+    cap: (ms) => 220 * S(ms) },
+  // Stack: 10 per box + 5 x combo (capped at 8) = 50 max per box. Late swings allow a
+  // drop about every 0.39 s, i.e. <= 130 points per second. An instant first-box miss
+  // plus countdown is just over 3 s.
+  stack: { name: 'Stack the Order', minMs: 3000, max: 400000,
+    cap: (ms) => 180 * S(ms) },
 };
 
 // Returns null when the score is plausible, else a reason.
