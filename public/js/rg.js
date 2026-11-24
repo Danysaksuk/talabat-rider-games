@@ -24,6 +24,8 @@
     hoops: { name: 'Basketball Shootout', short: 'Hoops' },
     superover: { name: 'Super Over', short: 'Super Over' },
     rush: { name: 'Talabat Rush Run', short: 'Rush Run' },
+    penalty: { name: 'Penalty Shootout', short: 'Penalty' },
+    stack: { name: 'Stack the Order', short: 'Stack' },
   };
 
   RG.api = async function (path, body) {
