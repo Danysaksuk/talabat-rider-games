@@ -9,7 +9,7 @@
   <h1>🏆 Leader<span>board</span></h1>
   <p class="sub" id="lbSub">Best score per rider in each game. The top scorer in each game wins.</p>
   <div class="tabs" role="tablist">
-    <button data-g="hoops">Hoops</button><button data-g="superover">Super Over</button><button data-g="rush">Rush Run</button>
+    <button data-g="hoops">Hoops</button><button data-g="superover">Super Over</button><button data-g="rush">Rush Run</button><button data-g="penalty">Penalty</button><button data-g="stack">Stack</button>
   </div>
   <div class="lb" id="lb"><div class="empty">Loading…</div></div>
   <p class="upd" id="upd"></p>
@@ -19,7 +19,7 @@
 (function () {
   const me = RG.rider();
   let game = new URLSearchParams(location.search).get('game') || 'hoops';
-  if (!['hoops', 'superover', 'rush'].includes(game)) game = 'hoops';
+  if (!RG.GAMES[game]) game = 'hoops';
   const tabs = document.querySelectorAll('.tabs button');
   function row(r, mine) {
     return `<div class="lr r${r.rank}${mine ? ' me' : ''}"><div class="rk">${r.rank <= 3 ? ['🥇', '🥈', '🥉'][r.rank - 1] : r.rank}</div>
