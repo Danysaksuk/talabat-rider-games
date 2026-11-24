@@ -25,10 +25,11 @@
     const L = level;
     return {
       level: L,
-      keeperDelay: Math.max(0.08, 0.44 - L * 0.028),
-      keeperSpeed: 130 + L * 24,
-      keeperReach: 26 + Math.min(20, L * 1.15),
-      keeperSmart: Math.min(0.95, 0.22 + L * 0.055),
+      // keeper tuned up (reacts sooner, moves faster, wider reach, reads more shots) from level 1
+      keeperDelay: Math.max(0.08, 0.37 - L * 0.026),
+      keeperSpeed: 160 + L * 26,
+      keeperReach: 32 + Math.min(22, L * 1.25),
+      keeperSmart: Math.min(0.95, 0.32 + L * 0.055),
       wall: L >= 3 && L <= 5 ? 'static' : L >= 6 && L <= 8 ? 'jump' : null,
       cones: L >= 6 && L <= 8,
       defenders: L >= 9,
@@ -172,8 +173,9 @@
   }
   function keeperBox(kick) {
     const reach = kick.keeperReach;
-    // Low early on, so a top-corner finish beats the keeper; later they can stretch up.
-    const height = 44 + Math.min(90, Math.max(0, kick.level - 1) * 6);
+    // Covers mid-height from level 1 but stays below the top-corner band early, so a corner finish beats
+    // the keeper; later they can stretch up.
+    const height = Math.max(64, 44 + Math.min(90, Math.max(0, kick.level - 1) * 6));
     return { x: kick.keeperX - reach, y: goalLine - height, w: reach * 2, h: height };
   }
 
