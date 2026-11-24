@@ -20,7 +20,7 @@ h1 span{color:var(--o)}
 label{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
 input{width:100%;font:inherit;font-size:18px;padding:13px 15px;border-radius:14px;border:2px solid #f1d5c4;background:#fff;outline:none;text-transform:none}
 input:focus{border-color:var(--o)}
-#rid{text-transform:uppercase;letter-spacing:2px;font-weight:700}
+#rid{letter-spacing:2px;font-weight:700}
 .err{color:#d0021b;font-size:13px;min-height:18px;margin-top:6px}
 .cards{display:grid;gap:14px;margin-top:14px}
 .gcard{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:22px;padding:14px;text-decoration:none;color:inherit;box-shadow:0 4px 18px rgba(255,90,0,.12);border:2px solid transparent;transition:transform .1s}
@@ -58,8 +58,8 @@ body.game{background:#111;overflow:hidden;touch-action:none;user-select:none;-we
 #cd.pop{animation:pop .9s ease-out}
 @keyframes pop{0%{transform:scale(1.8);opacity:0}25%{transform:scale(1);opacity:1}100%{transform:scale(.9);opacity:.2}}
 /* leaderboard */
-.tabs{display:flex;gap:6px;background:#fff;border-radius:999px;padding:5px;margin:16px 0 12px;overflow-x:auto}
-.tabs button{flex:1;border:0;background:none;border-radius:999px;padding:9px 8px;font-weight:700;font-size:13px;color:var(--mut);white-space:nowrap}
+.tabs{display:flex;gap:4px;background:#fff;border-radius:999px;padding:4px;margin:16px 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs button{flex:0 0 auto;border:0;background:none;border-radius:999px;padding:8px 7px;font-weight:700;font-size:11px;color:var(--mut);white-space:nowrap}
 .tabs button.on{background:var(--o);color:#fff}
 .lb{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 18px rgba(255,90,0,.1)}
 .lr{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #f6e6dc;font-size:15px}
