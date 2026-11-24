@@ -1,9 +1,118 @@
 <!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<title>Penalty Shootout · Talabat Rider Games</title><meta name="theme-color" content="#FF5A00">
+<title>Penalty Shootout · Talabat Rider Games</title><meta name="theme-color" content="#0a0f1d">
 <link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/css/rg.css">
+<link rel="preload" href="/fonts/Poppins-Medium.ttf" as="font" type="font/ttf" crossorigin><link rel="preload" href="/fonts/Poppins-Bold.ttf" as="font" type="font/ttf" crossorigin><link rel="preload" href="/fonts/Poppins-Black.ttf" as="font" type="font/ttf" crossorigin><link rel="preload" href="/img/talabat-logo.png" as="image">
+<link rel="modulepreload" href="/vendor/three.min.js?v=5">
+<style>
+/* Penalty screens: self-hosted Poppins only (500/700/900), no system fallback, no faux bold/italic */
+html,body,button,input{font-family:Poppins;font-synthesis:none}
+body{font-weight:500}
+.ov .newbest{font-weight:900}
+.hbtn{font-size:0;background-position:center;background-repeat:no-repeat;background-size:20px 20px,100% 100%}
+#back{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M19 12H5M11 6l-6 6 6 6'/%3E%3C/svg%3E"),linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45))}
+#mute{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9v6h4l5 4V5L8 9z' fill='%23fff'/%3E%3Cpath d='M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12'/%3E%3C/svg%3E"),linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45))}
+#mute[aria-label=Unmute]{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 9v6h4l5 4V5L8 9z' fill='%23fff'/%3E%3Cpath d='M17 9l5 6M22 9l-5 6'/%3E%3C/svg%3E"),linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45))}
+#rot{font-size:0}#rot b{font-size:20px;font-weight:900}#rot{color:#fff}#rot:after{content:"The game is paused.";font-size:15px}
+.tlogo{display:block;height:100%;width:auto;aspect-ratio:420/146}
+.ov h2 .kick{display:flex;align-items:center;justify-content:center;gap:8px;height:24px;font-size:11px;letter-spacing:3px;color:#FF7A2E;font-weight:900;margin-bottom:8px}
+body.pen #stage{background:#05070d}
+body.pen #fx{z-index:2}
+#hud{position:absolute;top:calc(8px + env(safe-area-inset-top));left:56px;right:56px;z-index:3;pointer-events:none;color:#fff;transition:opacity .3s}
+#hud.off{opacity:0}
+#sb{display:flex;align-items:stretch;height:46px;border-radius:9px;overflow:hidden;background:linear-gradient(180deg,#1a2338,#0a0f1d);box-shadow:0 6px 16px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.1)}
+#sb .br{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 6px 0 7px;line-height:1;background:rgba(255,255,255,.05)}
+#sb .br .tlogo{height:22px}
+#sb .br small{font-size:6.5px;letter-spacing:1.6px;font-weight:700;color:#FF7A2E;margin-top:3px}
+#sb .cell{display:flex;flex-direction:column;justify-content:center;align-items:center;padding:0 7px;min-width:44px;border-left:1px solid rgba(255,255,255,.08);position:relative;z-index:1}
+#sb .cell:nth-child(2){border-left:0;padding-left:12px}
+#sb .cell small{font-size:7.5px;letter-spacing:1.4px;font-weight:700;color:#9fb0d0;line-height:1.2}
+#sb .cell b{font-size:18px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+#sb .cell.sc{flex:1;background:rgba(255,255,255,.04)}
+#sb .cell.sc b{font-size:22px}
+#sb .cell b.bump{animation:bump .5s ease-out}
+@keyframes bump{0%{transform:scale(1.6);color:#FFD23F}100%{transform:scale(1)}}
+#sub{display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:6px}
+#kd{display:flex;align-items:center;gap:4px;background:rgba(10,15,29,.82);padding:5px 9px;border-radius:99px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+#kd i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.2);transition:background .2s}
+#kd i.g{background:#2ee66b;box-shadow:0 0 7px #2ee66b}
+#kd i.m{background:#ff3b4e}
+#kd i.c{background:#FFD23F;animation:kp 1s infinite}
+@keyframes kp{50%{box-shadow:0 0 0 4px rgba(255,210,63,.25)}}
+#kd span{font-size:9px;font-weight:700;color:#cfd8ee;margin-left:3px;letter-spacing:.4px;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:99px;font-size:10.5px;font-weight:700;white-space:nowrap;background:rgba(10,15,29,.82);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+#rank{background:linear-gradient(90deg,#ff5a00,#ff8a3d);box-shadow:0 3px 10px rgba(255,90,0,.45)}
+#rank.up{animation:bump .6s ease-out}
+#chips2{display:flex;justify-content:center;gap:6px;margin-top:6px;min-height:22px}
+#wind.hide,#zonesChip.hide{display:none}
+#wind{height:24px;gap:6px;padding:0 10px 0 9px;background:linear-gradient(90deg,#0a5c8f,#1497d0);box-shadow:0 3px 10px rgba(20,151,208,.4),inset 0 0 0 1px rgba(255,255,255,.18)}
+#wind .wl{font-size:9px;letter-spacing:1.4px;font-weight:700;opacity:.85}
+#wind b{font-size:13px;font-weight:900;font-variant-numeric:tabular-nums}
+#wind small{font-size:8px;font-weight:700;letter-spacing:.6px;opacity:.85;margin-left:-3px}
+#wind em{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+#wind s{display:block;width:3px;border-radius:1px;background:rgba(255,255,255,.3)}
+#wind s:nth-child(1){height:5px}#wind s:nth-child(2){height:8px}#wind s:nth-child(3){height:12px}
+#wind s.on{background:#fff}
+#wind[data-dir="-1"] i{transform:scaleX(-1)}
+@keyframes wnd{0%,100%{translate:-2px 0}50%{translate:3px 0}}
+#wind i{display:inline-block;width:18px;height:12px;animation:wnd 1s ease-in-out infinite;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 10'%3E%3Cpath d='M0 5h10M7 1l4 4-4 4' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat}
+#pb{position:absolute;left:50%;top:calc(118px + env(safe-area-inset-top));z-index:4;transform:translate(-50%,-30px);opacity:0;pointer-events:none;background:linear-gradient(90deg,#FFD23F,#ffb300);color:#1d1d1f;font-weight:900;font-size:13px;letter-spacing:1px;padding:7px 16px;border-radius:99px;box-shadow:0 6px 18px rgba(255,190,0,.5);white-space:nowrap;transition:all .35s cubic-bezier(.2,1.6,.4,1)}
+#pb.show{transform:translate(-50%,0);opacity:1}
+#banner{position:absolute;left:0;right:0;top:21%;z-index:4;text-align:center;pointer-events:none;opacity:0;--c:#FF5A00}
+#banner b{display:block;font-weight:900;font-size:40px;line-height:1;color:#fff;letter-spacing:-.5px;text-shadow:0 4px 0 var(--c),0 0 20px rgba(0,0,0,.55)}
+#banner span{display:inline-block;margin-top:9px;font-weight:900;font-size:12px;letter-spacing:1px;color:#fff;background:var(--c);padding:5px 14px;border-radius:99px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
+#banner span:empty{display:none}
+#banner.show{animation:bn 1.05s cubic-bezier(.2,1.3,.4,1) forwards}
+#banner.lvl b{font-size:36px}
+#banner.lvl.show{animation-duration:1.5s}
+@keyframes bn{0%{opacity:0;transform:scale(1.5)}16%{opacity:1;transform:scale(.97)}26%{transform:scale(1)}78%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(1)}}
+#hint{position:absolute;left:0;right:0;top:57%;z-index:3;text-align:center;pointer-events:none;transition:opacity .4s}
+#hint b{display:inline-block;font-weight:700;font-size:14px;color:#fff;background:rgba(10,15,29,.78);padding:7px 14px;border-radius:99px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+#hint.hide{opacity:0}
+#flash{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:radial-gradient(ellipse at 50% 30%,rgba(255,210,63,.55),rgba(255,90,0,0) 70%)}
+#vig{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.45))}
+body.pen .ov{background:linear-gradient(180deg,rgba(5,9,22,.35),rgba(5,9,22,.82) 45%,rgba(5,9,22,.92))}
+body.pen .ov h2{font-size:32px;letter-spacing:-.5px}
+body.pen .ov .how{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);font-size:13px}
+body.pen .ov .big{text-shadow:0 0 24px rgba(255,90,0,.5)}
+.pboard{width:100%;max-width:300px;margin:0 0 18px;border-radius:14px;overflow:hidden;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);text-align:left}
+.pboard .ph{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:linear-gradient(90deg,#ff5a00,#ff8a3d);font-weight:900;font-size:12px;letter-spacing:1px}
+.pboard .pr{display:flex;align-items:center;gap:10px;padding:7px 12px;font-size:13px;border-top:1px solid rgba(255,255,255,.06)}
+.pboard .pr .k{width:28px;font-weight:900;color:#9fb0d0}
+.pboard .md{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;font-size:11px;font-weight:900;color:#1d1d1f}
+.pboard .md1{background:linear-gradient(#ffe27a,#e0a800)}.pboard .md2{background:linear-gradient(#f2f4f8,#aab3c2)}.pboard .md3{background:linear-gradient(#f3b07a,#b8682d)}
+.pboard .pr .n{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pboard .pr .s{font-weight:900;font-variant-numeric:tabular-nums}
+.pboard .pr.me{background:rgba(255,210,63,.16)}
+.pboard .pr.me .k,.pboard .pr.me .s{color:#FFD23F}
+.pboard .gap{padding:2px 12px;font-size:11px;opacity:.5}
+</style>
 </head><body>
-<div id="stage"><canvas id="c"></canvas></div>
-<script src="/js/rg.js"></script><script src="/js/penalty-core.js"></script><script src="/js/penalty.js"></script>
+<div id="stage"><canvas id="c"></canvas><canvas id="fx"></canvas><div id="vig"></div><div id="flash"></div>
+<div id="hud" class="off">
+  <div id="sb">
+    <div class="br"><img class="tlogo" src="/img/talabat-logo.png" alt="talabat" width="63" height="22"><small>RIDER CUP</small></div>
+    <div class="cell"><small>LEVEL</small><b id="sbLvl">1</b></div>
+    <div class="cell sc"><small>SCORE</small><b id="sbScore">0</b></div>
+    <div class="cell"><small>GOALS</small><b id="sbGoals">0/3</b></div>
+  </div>
+  <div id="sub"><div id="kd"><i></i><i></i><i></i><i></i><i></i><span>3 TO GO UP</span></div><span id="rank" class="chip">Score to rank</span></div>
+  <div id="chips2"><span id="wind" class="chip hide"><span class="wl">WIND</span><i></i><b>0</b><small>KM/H</small><em><s></s><s></s><s></s></em></span><span id="zonesChip" class="chip hide">TOP CORNERS +50</span></div>
+</div>
+<div id="pb">NEW PERSONAL BEST</div>
+<div id="banner"><b></b><span></span></div>
+<div id="hint" class="hide"><b>Draw a curve from the ball</b></div>
+</div>
+<script src="/js/rg.js"></script><script src="/js/penalty-core.js"></script>
+<script>
+(function () {
+  var ok = false;
+  try { var t = document.createElement('canvas'); ok = !!(window.WebGLRenderingContext && (t.getContext('webgl2') || t.getContext('webgl'))); } catch (e) { ok = false; }
+  var s = document.createElement('script');
+  if (ok && !/[?&]q=2d\b/.test(location.search)) { document.body.classList.add('pen'); s.type = 'module'; s.src = '/js/penalty.js?v=6'; }
+  else { ['fx', 'hud', 'pb', 'banner', 'hint', 'flash', 'vig'].forEach(function (id) { var el = document.getElementById(id); if (el) el.remove(); }); s.src = '/js/penalty-2d.js?v=6'; }
+  document.body.appendChild(s);
+})();
+</script>
 </body></html>
