@@ -1,10 +1,10 @@
 #!/bin/sh
 # Rebuilds public/vendor/three.min.js: a tree-shaken, minified ES module of three.js r187 with only
-# the classes rush.js, penalty.js and superover.js use (about a third of the full build). Needs network for npx/npm.
-# Usage: sh tools/build-three.sh   (re-run after using a new THREE.* class in rush.js, penalty.js or superover.js)
+# the classes rush.js, penalty.js, superover.js and stack.js use (about a third of the full build). Needs network for npx/npm.
+# Usage: sh tools/build-three.sh   (re-run after using a new THREE.* class in rush.js, penalty.js, superover.js or stack.js)
 set -e
 cd "$(dirname "$0")/.."
-NAMES=$(grep -oh "THREE\.[A-Za-z0-9_]*" public/js/rush.js public/js/penalty.js public/js/superover.js | sort -u | sed 's/THREE\.//' | paste -sd, -)
+NAMES=$(grep -oh "THREE\.[A-Za-z0-9_]*" public/js/rush.js public/js/penalty.js public/js/superover.js public/js/stack.js | sort -u | sed 's/THREE\.//' | paste -sd, -)
 TMP=$(mktemp -d)
 (cd "$TMP" && npm pack three@0.187.0 --silent >/dev/null && tar xzf three-0.187.0.tgz)
 echo "export { $NAMES } from '$TMP/package/build/three.module.js';" > "$TMP/entry.js"
