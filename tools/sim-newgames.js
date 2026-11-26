@@ -4,6 +4,7 @@
 'use strict';
 const P = require('../public/js/penalty-core.js');
 const S = require('../public/js/stack-core.js');
+const SO = require('../public/js/superover-core.js');
 const { check } = require('../rules.js');
 const CD = 2.9; // shell countdown, included in server-measured run time
 let fails = 0;
@@ -74,4 +75,42 @@ ok('stack: 30,000 at 40 s rejected', check('stack', 30000, 40000) !== null);
 ok('stack: 200 at 2 s rejected (too short)', check('stack', 200, 2000) !== null);
 ok('stack: a mid-run 800 at 12 s is accepted', check('stack', 800, 12000) === null);
 
+// ---------- Super Over ----------
+// mulberry32: seeded rand so innings are reproducible
+function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+// play one innings at 60 fps; errMs(rand) = tap offset from the ideal contact moment (null = no swing)
+function playSuperOver(seed, errMs) {
+  const R = rng(seed); let fin = null, rejected = null, maxRate = 0;
+  const g = SO.createGame({ rand: R, on: (ev, d) => { if (ev === 'finish') fin = d; } });
+  const dt = 1 / 60; let now = CD * 1000, t = 0, planned = null;
+  g.nextBall(800);
+  while (!fin && t < 1200) {
+    if (g.phase === 'flight' && g.swing < 0) {
+      if (planned === null) { const e = errMs(R); planned = e === null ? Infinity : g.del.hitAt + e; }
+      if (now >= planned) g.tap(planned);
+    } else if (g.phase !== 'flight') planned = null;
+    const before = g.ball + g.over * 10;
+    g.update(dt, now, true); now += dt * 1000; t += dt;
+    if (g.ball + g.over * 10 !== before) {
+      const ms = now - 0; // server time includes the countdown
+      if (ms >= 5000 && check('superover', g.runs, ms)) { rejected = { runs: g.runs, s: ms / 1000, over: g.over, why: check('superover', g.runs, ms) }; break; }
+      maxRate = Math.max(maxRate, g.runs / (ms / 1000));
+    }
+  }
+  return { fin, rejected, runs: g.runs, over: g.over, wickets: g.wickets, t: now / 1000, maxRate };
+}
+{
+  const perfect = playSuperOver(1, () => 0);
+  ok('superover: perfect bot completes all 10 overs, 60 sixes', perfect.fin && perfect.fin.won && perfect.runs === 360, JSON.stringify({ runs: perfect.runs, over: perfect.over, t: perfect.t.toFixed(1) }));
+  ok('superover: a perfect innings is accepted by the cap at every ball', !perfect.rejected, perfect.rejected ? JSON.stringify(perfect.rejected) : `final ${perfect.runs} at ${perfect.t.toFixed(1)}s`);
+  let rej = null;
+  for (let sd = 2; sd < 40 && !rej; sd++) { const r = playSuperOver(sd, (R) => (R() - 0.5) * 2 * 120); if (r.rejected) rej = r.rejected; }
+  ok('superover: noisy bots (38 seeds) never trip the cap', !rej, rej ? JSON.stringify(rej) : '');
+  const none = playSuperOver(3, () => null);
+  ok('superover: never swinging is all out in over 1 with 0 runs', none.fin && none.runs === 0 && none.over === 1 && none.wickets === 2, JSON.stringify({ runs: none.runs, over: none.over }));
+  ok('superover: 0 after two balls is accepted', check('superover', 0, none.t * 1000) === null, `${none.t.toFixed(1)}s`);
+  ok('superover: tampered 360 at 20 s rejected', check('superover', 360, 20000) !== null);
+  ok('superover: 400 at 300 s rejected (over max)', check('superover', 400, 300000) !== null);
+  ok('superover: 30 at 4 s rejected (too short)', check('superover', 30, 4000) !== null);
+}
 process.exit(fails ? 1 : 0);

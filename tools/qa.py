@@ -27,7 +27,7 @@ def api(path, body=None, expect_json=True):
         try: return e.code, json.loads(raw)
         except Exception: return e.code, raw
 
-def browser(p, w=390, h=844, mobile=True, rider=('QA001', 'QA Bot')):
+def browser(p, w=390, h=844, mobile=True, rider=('7700001', 'QA Bot')):
     b = p.chromium.launch(channel='chrome', headless=True, args=['--autoplay-policy=no-user-gesture-required'])
     ctx = b.new_context(viewport={'width': w, 'height': h}, device_scale_factor=2 if mobile else 1, has_touch=mobile, is_mobile=mobile)
     if rider: ctx.add_init_script("localStorage.setItem('rg_rider', JSON.stringify({id:'%s',nick:'%s'}))" % rider)
@@ -126,7 +126,7 @@ with sync_playwright() as p:
 
     elif PART == 'superover':
         b, pg, errs = browser(p)
-        pg.goto(BASE + '/superover'); time.sleep(0.6); shot(pg, 'superover-ready.png')
+        pg.goto(BASE + '/superover'); pg.wait_for_selector('#back', timeout=20000); time.sleep(0.6); shot(pg, 'superover-ready.png')  # renderer loads async (3D module or 2D fallback)
         buttons_tappable(pg, 'Ready')
         pg.click('#playBtn'); time.sleep(3.2)
         # blocker 4: hide the tab mid-delivery for 3 s -> paused, ball re-bowled, no wicket, 3-2-1 on return
